@@ -1,13 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <html>
+
 <head>
-        <style>
-                <link rel="stylesheet" href="style.css" type="text/css">
-        </style>
+    <style>
+        #stopwatchContainer {
+            display: block;
+            text-align: center;
+            border: 2px solid #eee;
+            margin: 8px auto;
+            width: 512px;
+        }
+
+        #timerText {
+            font-size: 2rem;
+            font-weight: bold;
+            background-color: #000;
+            color: #0f0;
+        }
+
+        #menu {
+            margin: 8px 0px;
+        }
+
+        #timesTracked {
+            border: 1px dashed #999;
+        }
+
+        #timesTracked div {
+            border-bottom: 1px dotted #999;
+        }
+
+        #timesTracked div:last-child {
+            border-bottom: 0px;
+        }
+    </style>
 </head>
+
 <body>
-<div id="stopwatchContainer">
+    <div id="stopwatchContainer">
         <h2>Stopwatch Demo</h2>
         <div id="timerText"></div>
         <div id="menu">
@@ -18,11 +49,102 @@
             </div>
         </div>
         <div id="timeTrackContainer">
-            <div><h3>Past Times</h3></div>
+            <div>
+                <h3>Past Times</h3>
+            </div>
             <div id="timesTracked">
             </div>
         </div>
-      </div>
-        <script src="/script.js"></script>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            var state = {
+                timerText: 0.00,
+                timerInterval: null,
+                timerStarted: false,
+                timesTracked: []
+            };
+
+            function updateDOMTimer() {
+                if (!state.domTimerText) {
+                    var domTimerText = document.getElementById("timerText");
+                    state.domTimerText = domTimerText;
+                    state.domTimerText.innerHTML = state.timerText;
+                } else {
+                    state.domTimerText.innerHTML = state.timerText;
+                }
+            }
+
+            function setTimerText(n) {
+                state.timerText = parseFloat(state.timerText);
+                state.timerText += n;
+                state.timerText = (Math.round(state.timerText * 100) / 100).toFixed(2);
+                updateDOMTimer();
+            }
+
+            function toggleTimer() {
+                if (state.timerStarted) {//stop timer
+                    state.timerStarted = false;
+                    clearInterval(state.timerInterval); //leave timertext
+                } else {//start timer
+                    state.timerStarted = true;
+                    state.timerInterval = setInterval(setTimerText.bind(this, 0.01), 10);
+                }
+            }
+
+            function resetTimer() {
+                clearInterval(state.timerInterval);
+                state.timerText = 0.00;
+                state.timesTracked = [];
+                state.timerStarted = false;
+                setTimerText(0.00);
+                updateDOMTimesTracked();
+            }
+
+            function updateDOMTimesTracked() {
+                var domTimesTracked = document.getElementById("timesTracked");
+                domTimesTracked.innerHTML = "";
+                state.timesTracked.forEach((val, ind) => {
+                    var tempDOMdiv = document.createElement("div");
+                    tempDOMdiv.innerHTML = val;
+                    domTimesTracked.insertBefore(tempDOMdiv, domTimesTracked.firstChild);
+                });
+            }
+
+            function setTimesTracked() {
+                state.timesTracked.push(state.timerText);
+                updateDOMTimesTracked();
+            }
+
+            function initStopwatch() {
+                const RKEY = 82, SKEY = 83, TKEY = 84;
+                var domStartStopBut = document.getElementById("startStopBut");
+                var domResetBut = document.getElementById("resetBut");
+                var domRecordTimeBut = document.getElementById("recordTimeBut");
+                domStartStopBut.addEventListener("click", toggleTimer);
+                domResetBut.addEventListener("click", resetTimer);
+                domRecordTimeBut.addEventListener("click", setTimesTracked);
+                document.addEventListener("keydown", function (e) {
+                    switch (e.keyCode) {
+                        case SKEY:
+                            toggleTimer();
+                            break;
+                        case RKEY:
+                            resetTimer();
+                            break;
+                        case TKEY:
+                            setTimesTracked();
+                            break;
+                    }
+                });
+                setTimerText(0.00);
+            }
+
+            initStopwatch();
+
+        });
+    </script>
 </body>
+
 </html>
